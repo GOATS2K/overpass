@@ -25,6 +25,4 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-/test_data
-/raw
 test.py
