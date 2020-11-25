@@ -12,23 +12,13 @@ auth = Blueprint("auth", __name__)
 
 @auth.route("/login/")
 def login():
-    return discord.create_session(scopes=["identify", "email", "guilds"])
+    return discord.create_session(scope=["identify", "guilds"])
 
 
 @auth.route("/callback/")
 def callback():
     discord.callback()
     return redirect(url_for(".verify"))
-
-
-@auth.errorhandler(403)
-def redirect_unauthorized(e):
-    return (
-        jsonify(
-            {"message": "Your Discord user is not authorized to use this application."}
-        ),
-        403,
-    )
 
 
 @auth.route("/verify/")
@@ -42,8 +32,19 @@ def verify():
         return abort(403)
 
 
+@auth.errorhandler(403)
+def redirect_unauthorized(e):
+    return (
+        jsonify(
+            {"message": "Your Discord user is not authorized to use this application."}
+        ),
+        403,
+    )
+
+
 @auth.route("/me/")
 @requires_authorization
 def me():
     user = discord.fetch_user()
-    return jsonify(user.__dict__)
+    users_dict = user.__dict__
+    return jsonify(users_dict)
