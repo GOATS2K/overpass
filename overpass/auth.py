@@ -5,7 +5,7 @@ from flask.json import jsonify
 from flask_discord import requires_authorization
 from overpass import discord
 
-DISCORD_GUILD_ID = 687702747813773457
+DISCORD_GUILD_ID = 793828987666432050
 
 auth = Blueprint("auth", __name__)
 
