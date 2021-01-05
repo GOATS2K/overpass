@@ -1,13 +1,57 @@
-from flask import redirect, url_for, Blueprint, abort
+# noqa: E501
+
+from flask import redirect, url_for, Blueprint, abort, session
 from flask.json import jsonify
 
 # from flask import current_app as app
-from flask_discord import requires_authorization
+from flask_discord import requires_authorization, Unauthorized, RateLimited
 from overpass import discord
+from overpass.db import get_db
+from datetime import datetime
 
 DISCORD_GUILD_ID = 793828987666432050
 
 auth = Blueprint("auth", __name__)
+
+
+def verify():
+    """ Verifies if user exists in the Discord guild """
+    guilds = discord.fetch_guilds()
+    user_is_in_guild = next((i for i in guilds if i.id == DISCORD_GUILD_ID), False)
+    if user_is_in_guild:
+        return True
+
+
+def add_user(username, snowflake, avatar):
+    """ Adds user to database """
+    current_date = datetime.now()
+    db = get_db()
+    print(f"Adding user {username} to User table")
+    db.execute(
+        "INSERT INTO user (username, snowflake, avatar, last_login_date) VALUES (?, ?, ?, ?)",
+        (username, snowflake, avatar, current_date),
+    )
+    db.commit()
+
+
+def check_if_user_exists(snowflake):
+    """ Returns True if user exists in database """
+    db = get_db()
+    q = db.execute("SELECT * FROM user WHERE snowflake = ?", (snowflake,))
+    result = q.fetchone()
+
+    if result:
+        return True
+
+
+def update_login_time(snowflake):
+    current_date = datetime.now()
+    db = get_db()
+    db.execute(
+        "UPDATE user SET last_login_date = ? WHERE snowflake = ?",
+        (current_date, snowflake),
+    )
+    db.commit()
 
 
 @auth.route("/login/")
@@ -17,34 +61,55 @@ def login():
 
 @auth.route("/callback/")
 def callback():
-    discord.callback()
-    return redirect(url_for(".verify"))
+    try:
+        discord.callback()
+        if not verify():
+            # When the callback succeeds, the token for the user gets set in memory
+            # Since the user isn't a member of the guild, we reset the session
+            # to prevent access to the API
+            session["DISCORD_OAUTH2_TOKEN"] = None
+            return abort(401)
+
+        resp = discord.fetch_user()
+        # Assume successful login
+        if not check_if_user_exists(resp.id):
+            add_user(resp.username, resp.id, resp.avatar_url)
+        else:
+            print(f"User {resp.username} already exists.")
+
+            # Update last login time
+            update_login_time(resp.id)
+
+        return redirect(url_for("auth.me"))
+    except RateLimited:
+        return "We are currently being rate limited, try again later."
 
 
-@auth.route("/verify/")
-@requires_authorization
-def verify():
-    guilds = discord.fetch_guilds()
-    user_is_in_guild = next((i for i in guilds if i.id == DISCORD_GUILD_ID), False)
-    if user_is_in_guild:
-        return redirect(url_for(".me"))
-    else:
-        return abort(403)
+@auth.errorhandler(Unauthorized)
+def redirect_discord_unauthorized(e):
+    return redirect(url_for("auth.login"))
 
 
-@auth.errorhandler(403)
+# Runs when abort(401) is called.
+@auth.errorhandler(401)
 def redirect_unauthorized(e):
     return (
         jsonify(
             {"message": "Your Discord user is not authorized to use this application."}
         ),
-        403,
+        401,
     )
 
 
 @auth.route("/me/")
 @requires_authorization
 def me():
-    user = discord.fetch_user()
-    users_dict = user.__dict__
-    return jsonify(users_dict)
+    resp = discord.fetch_user()
+    user = {
+        "name": resp.username,
+        "email": resp.email,
+        "id": resp.id,
+        "avatar": resp.avatar_url,
+        "verified": resp.verified,
+    }
+    return jsonify(user)
