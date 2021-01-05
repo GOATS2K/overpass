@@ -5,10 +5,13 @@ from overpass.secrets import (
     DISCORD_REDIRECT_URI,
 )
 from flask_discord import DiscordOAuth2Session
+from flask_login import LoginManager
 import os
 from overpass.db import init_app, close_db, init_db_command
 
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 discord = DiscordOAuth2Session()
+login = LoginManager()
 
 
 def create_app():
@@ -23,14 +26,17 @@ def create_app():
     app.config["DISCORD_REDIRECT_URI"] = DISCORD_REDIRECT_URI
 
     discord.init_app(app)
+    login.init_app(app)
     init_app(app)
 
     with app.app_context():
         # Imports are done here to prevent circular import errors when
         # importing extensions from this file
         from overpass.auth import auth
+        from overpass.rtmp_api import bp as rtmp
 
         app.register_blueprint(auth)
+        app.register_blueprint(rtmp, url_prefix="/api")
 
         @app.route("/")
         def home() -> str:
