@@ -33,10 +33,12 @@ def create_app():
         # Imports are done here to prevent circular import errors when
         # importing extensions from this file
         from overpass.auth import auth
-        from overpass.rtmp_api import bp as rtmp
+        from overpass.stream_api import bp as stream
+        from overpass.rtmp_server_api import bp as rtmp
 
         app.register_blueprint(auth)
-        app.register_blueprint(rtmp, url_prefix="/api")
+        app.register_blueprint(stream, url_prefix="/api/stream")
+        app.register_blueprint(rtmp, url_prefix="/api/rtmp")
 
         @app.route("/")
         def home() -> str:
