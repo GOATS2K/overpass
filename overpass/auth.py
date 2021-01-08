@@ -1,6 +1,6 @@
-# noqa: E501
+# flake8: noqa E501
 
-from flask import redirect, url_for, Blueprint, abort, session
+from flask import redirect, url_for, Blueprint, abort, session, current_app
 from flask.json import jsonify
 
 # from flask import current_app as app
@@ -26,7 +26,7 @@ def add_user(username, snowflake, avatar):
     """ Adds user to database """
     current_date = datetime.now()
     db = get_db()
-    print(f"Adding user {username} to User table")
+    current_app.logger.info(f"Adding user {username} to User table")
     db.execute(
         "INSERT INTO user (username, snowflake, avatar, last_login_date) VALUES (?, ?, ?, ?)",
         (username, snowflake, avatar, current_date),
@@ -63,6 +63,7 @@ def login():
 def callback():
     try:
         discord.callback()
+        current_app.logger.info(session)
         if not verify():
             # When the callback succeeds, the token for the user gets set in memory
             # Since the user isn't a member of the guild, we reset the session
@@ -75,8 +76,7 @@ def callback():
         if not check_if_user_exists(resp.id):
             add_user(resp.username, resp.id, resp.avatar_url)
         else:
-            print(f"User {resp.username} already exists.")
-
+            current_app.logger.info(f"User {resp.username} has just signed in")
             # Update last login time
             update_login_time(resp.id)
 
