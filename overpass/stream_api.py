@@ -5,7 +5,7 @@ import uuid
 from flask_discord import requires_authorization, Unauthorized
 from overpass import discord
 from overpass.db import get_db, query_db
-from overpass.rtmp_server_api import end_stream, get_stream_key_from_unique_id
+from overpass.stream_utils import get_stream_key_from_unique_id, rewrite_stream_playlist
 from pathlib import Path
 from os import environ
 from flask.helpers import send_from_directory
@@ -43,18 +43,6 @@ def get_current_livestreams():
         del stream["user_snowflake"]
 
     return res
-
-
-def rewrite_stream_playlist(path, stream_key):
-    current_app.logger.info(f"Rewriting playlist for {stream_key}")
-    with open(f"{path}/{stream_key}.m3u8", "r") as infile:
-        lines = infile.readlines()
-
-    with open(f"{path}/{stream_key}-index.m3u8", "w+") as outfile:
-        outfile.seek(0)
-        outfile.truncate()
-        for line in lines:
-            outfile.write(line.replace(f"{stream_key}-", ""))
 
 
 @bp.errorhandler(Unauthorized)

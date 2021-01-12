@@ -5,6 +5,7 @@ from flask.helpers import make_response
 from overpass.db import query_db, get_db
 from datetime import datetime
 from overpass.util import str_to_bool
+from overpass.stream_utils import get_unique_stream_id_from_stream_key
 
 bp = Blueprint("rtmp", __name__)
 
@@ -35,7 +36,7 @@ def start_stream(stream_key):
     db.commit()
 
 
-def end_stream(stream_key, **kwargs):
+def end_stream(stream_key):
     db = get_db()
     current_app.logger.info(f"Ending stream {stream_key}")
     res = query_db("SELECT * FROM stream WHERE stream_key = ?", [stream_key], one=True)
@@ -54,20 +55,6 @@ def archive_stream(stream_key):
         (str(stream_path), stream_key),
     )
     db.commit()
-
-
-def get_unique_stream_id_from_stream_key(stream_key):
-    res = query_db(
-        "SELECT unique_id FROM stream WHERE stream_key = ?", [stream_key], one=True
-    )
-    return res["unique_id"]
-
-
-def get_stream_key_from_unique_id(unique_id):
-    res = query_db(
-        "SELECT stream_key FROM stream WHERE unique_id = ?", [unique_id], one=True
-    )
-    return res["stream_key"]
 
 
 @bp.route("/connect", methods=["POST"])
