@@ -20,6 +20,8 @@ CREATE TABLE stream (
     title TEXT NOT NULL,
     description TEXT NOT NULL,
     category TEXT,
+    archived_file TEXT,
+    archivable INTEGER,
 
     FOREIGN KEY (user_snowflake) REFERENCES user (snowflake)
 );

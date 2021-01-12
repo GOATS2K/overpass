@@ -15,14 +15,16 @@ from flask.helpers import send_from_directory
 bp = Blueprint("stream", __name__)
 
 
-def add_stream_to_db(snowflake, title, description, category, unique_id, stream_key):
+def add_stream_to_db(
+    snowflake, title, description, category, archivable, unique_id, stream_key
+):
     db = get_db()
     current_app.logger.info(
         f"Adding stream {title} by {snowflake} with stream key {stream_key} to database"
     )
     db.execute(
-        "INSERT INTO stream (user_snowflake, title, description, category, unique_id, stream_key) VALUES (?, ?, ?, ?, ?, ?)",
-        (snowflake, title, description, category, unique_id, stream_key),
+        "INSERT INTO stream (user_snowflake, title, description, category, archivable, unique_id, stream_key) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (snowflake, title, description, category, archivable, unique_id, stream_key),
     )
     db.commit()
 
@@ -102,7 +104,38 @@ def serve_stream(unique_id, file):
         else:
             return send_from_directory(environ.get("HLS_PATH"), f"{stream_key}-{file}")
     else:
-        return jsonify({"message": "Invalid stream ID"}), 404
+        return (
+            jsonify({"message": "Invalid stream ID or the stream has just ended."}),
+            404,
+        )
+
+
+@bp.route("/archive/download/<unique_id>")
+def serve_archive(unique_id):
+    res = query_db("SELECT * FROM stream WHERE unique_id = ?", [unique_id], one=True)
+    if res["archived_file"]:
+        user = query_db(
+            "SELECT username FROM user WHERE snowflake = ?",
+            [res["user_snowflake"]],
+            one=True,
+        )
+        filename = f"{user['username']} - {res['title']} - {res['start_date']}.mp4"
+        return send_from_directory(
+            environ.get("REC_PATH"),
+            filename=f"{res['stream_key']}.mp4",
+            as_attachment=True,
+            attachment_filename=filename,
+        )
+
+
+@bp.route("/archive/list")
+def list_archived_streams():
+    items = "id, user_snowflake, start_date, title, description, category, unique_id"
+    res = query_db(f"SELECT {items} FROM stream WHERE archived_file IS NOT NULL")
+    for stream in res:
+        stream["download"] = f"/api/stream/archive/download/{stream['unique_id']}"
+
+    return jsonify(res), 200
 
 
 @bp.route("/generate", methods=["POST"])
@@ -114,11 +147,14 @@ def generate_stream_key():
     title = req_json.get("title", "No title")
     description = req_json.get("description", "Unknown")
     category = req_json.get("category", "Unknown")
+    archivable = req_json.get("archivable", False)
 
     keyvar = uuid.uuid4()
     stream_key = str(keyvar)[0:8]
     unique_id = str(keyvar)[24:32]
-    add_stream_to_db(snowflake, title, description, category, unique_id, stream_key)
+    add_stream_to_db(
+        snowflake, title, description, category, archivable, unique_id, stream_key
+    )
 
     return (
         jsonify({"message": "Stream key generation completed.", "key": stream_key}),

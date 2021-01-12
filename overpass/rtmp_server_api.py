@@ -1,7 +1,10 @@
+from os import environ
+from pathlib import Path
 from flask import Blueprint, request, current_app, jsonify
 from flask.helpers import make_response
 from overpass.db import query_db, get_db
 from datetime import datetime
+from overpass.util import str_to_bool
 
 bp = Blueprint("rtmp", __name__)
 
@@ -42,6 +45,17 @@ def end_stream(stream_key, **kwargs):
     db.commit()
 
 
+def archive_stream(stream_key):
+    stream_path = Path(environ.get("REC_PATH")) / f"{stream_key}.mp4"
+    current_app.logger.info(f"Adding stream {stream_path} to archive")
+    db = get_db()
+    db.execute(
+        "UPDATE stream SET archived_file = ? WHERE stream_key = ?",
+        (str(stream_path), stream_key),
+    )
+    db.commit()
+
+
 def get_unique_stream_id_from_stream_key(stream_key):
     res = query_db(
         "SELECT unique_id FROM stream WHERE stream_key = ?", [stream_key], one=True
@@ -74,4 +88,11 @@ def done():
     stream_key = request.form["name"]
     # Write stream end date to db
     end_stream(stream_key)
+
+    res = query_db("SELECT * FROM stream WHERE stream_key = ?", [stream_key], one=True)
+    if str_to_bool(res["archivable"]):
+        current_app.logger.info("Stream is archivable.")
+        archive_stream(stream_key)
+    else:
+        current_app.logger.info("Stream not going to be archived.")
     return jsonify({"message": "Stream has successfully ended"}), 200
