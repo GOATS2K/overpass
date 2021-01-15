@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<form method="post" action="{{url_for('stream.generate_stream_key')}}">
+    <!-- Perhaps we should use WTForms instead. -->
+    <div class="form-group">
+        {{ form.title.label }}
+        {{ form.title(class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.category.label }}
+        {{ form.category(class="form-control") }}
+    </div>
+    <div class="form-group">
+        {{ form.description.label }}
+        {{ form.description(class="form-control") }}
+    </div>
+    <div class="form-check">
+        {{ form.archivable.label }}
+        {{ form.archivable(class="form-check-input") }}
+    </div>
+    <div class="form-check">
+        {{ form.unlisted.label }}
+        {{ form.unlisted(class="form-check-input") }}
+    </div>
+    <button type="submit" class="btn btn-primary">Generate stream key</button>
+</form>
+{% if key %}
+<div class="card">
+  <div class="card-body">
+    Stream key: <b>{{ key }}</b>
+    <br>
+    Unique ID: {{ id }}
+    <br>
+    Your stream will be live on: {{url_for('hls.serve_stream', unique_id=id, file='index.m3u8')}}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

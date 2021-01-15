@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block content %}
+    {% if authorized %}
+
+    <h1>Hello, {{ user.username }}</h1>
+
+    {% else %}
+
+    <h1>Sign in here.</h1>
+
+    <a href={{url_for('auth.login')}}><img src={{url_for('static', filename="sign_in_with_discord.png")}} /></a>
+    {% endif %}
+{% endblock %}

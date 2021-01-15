@@ -18,7 +18,7 @@ def create_app():
 
     try:
         app.secret_key = secret_key.encode()
-    except NoneType:
+    except AttributeError:
         raise ValueError("The environment variable OVERPASS_SECRET_KEY is not set!")
 
     app.teardown_appcontext(close_db)
@@ -38,13 +38,15 @@ def create_app():
         from overpass.auth import auth
         from overpass.stream_api import bp as stream
         from overpass.rtmp_server_api import bp as rtmp
+        from overpass.index import bp as index
+        from overpass.archive import bp as archive
+        from overpass.hls import bp as hls
 
+        app.register_blueprint(index)
         app.register_blueprint(auth, url_prefix="/auth")
-        app.register_blueprint(stream, url_prefix="/api/stream")
+        app.register_blueprint(stream, url_prefix="/stream")
         app.register_blueprint(rtmp, url_prefix="/api/rtmp")
-
-        @app.route("/")
-        def home() -> str:
-            return "Hello world!"
+        app.register_blueprint(archive, url_prefix="/archive")
+        app.register_blueprint(hls, url_prefix="/hls")
 
         return app
