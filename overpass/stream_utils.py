@@ -26,3 +26,23 @@ def rewrite_stream_playlist(path, stream_key):
         outfile.truncate()
         for line in lines:
             outfile.write(line.replace(f"{stream_key}-", ""))
+
+
+def find_livestreams_by_username(username):
+    items = "id, user_snowflake, start_date, title, description, category, unique_id"
+    res = query_db(
+        "SELECT snowflake FROM user WHERE username = ?", [username], one=True
+    )
+    stream = query_db(
+        f"SELECT {items} FROM stream WHERE user_snowflake = ?",
+        [res["snowflake"]],
+        one=True,
+    )
+    return stream
+
+
+def get_username_from_snowflake(snowflake):
+    user = query_db(
+        "SELECT username FROM user WHERE snowflake = ?", [snowflake], one=True,
+    )
+    return user["username"]

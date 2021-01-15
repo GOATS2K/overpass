@@ -59,6 +59,12 @@ def login():
     return discord.create_session(scope=["identify", "guilds"])
 
 
+@auth.route("/logout/")
+def logout():
+    discord.revoke()
+    return "You have been logged out."
+
+
 @auth.route("/callback/")
 def callback():
     try:
@@ -68,7 +74,7 @@ def callback():
             # When the callback succeeds, the token for the user gets set in memory
             # Since the user isn't a member of the guild, we reset the session
             # to prevent access to the API
-            session["DISCORD_OAUTH2_TOKEN"] = None
+            session.clear()
             return abort(401)
 
         resp = discord.fetch_user()
