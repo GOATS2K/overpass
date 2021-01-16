@@ -28,7 +28,8 @@ def start_stream(stream_key):
     current_app.logger.info(f"Stream {stream_key} is now live!")
     res = query_db("SELECT * FROM stream WHERE stream_key = ?", [stream_key], one=True)
     db.execute(
-        "UPDATE stream SET start_date = ? WHERE id = ?", (datetime.now(), res["id"])
+        "UPDATE stream SET start_date = ? WHERE id = ?",
+        (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), res["id"]),
     )
     db.commit()
 
@@ -38,7 +39,8 @@ def end_stream(stream_key):
     current_app.logger.info(f"Ending stream {stream_key}")
     res = query_db("SELECT * FROM stream WHERE stream_key = ?", [stream_key], one=True)
     db.execute(
-        "UPDATE stream SET end_date = ? WHERE id = ?", (datetime.now(), res["id"])
+        "UPDATE stream SET end_date = ? WHERE id = ?",
+        (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), res["id"]),
     )
     db.commit()
 

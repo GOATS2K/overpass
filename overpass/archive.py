@@ -1,10 +1,31 @@
-from flask import Blueprint, send_from_directory, jsonify, current_app
+from flask import (
+    Blueprint,
+    send_from_directory,
+    current_app,
+    redirect,
+    url_for,
+    request,
+)
+from flask.templating import render_template
 from overpass.db import query_db, get_db
 from os import environ
 from pathlib import Path
 from overpass.stream_utils import get_username_from_snowflake
+from flask_discord import Unauthorized, requires_authorization
+
 
 bp = Blueprint("archive", __name__)
+
+
+@bp.errorhandler(Unauthorized)
+def redirect_discord_unauthorized(e):
+    return redirect(url_for("auth.login"))
+
+
+@bp.before_request
+@requires_authorization
+def require_auth():
+    pass
 
 
 def archive_stream(stream_key, private=False):
@@ -23,8 +44,7 @@ def archive_stream(stream_key, private=False):
     db.commit()
 
 
-@bp.route("/list")
-def list_archived_streams():
+def get_archived_streams():
     items = "id, user_snowflake, start_date, title, description, category, unique_id"
     res = query_db(
         f"SELECT {items} FROM stream WHERE unlisted = 0 AND archivable = 1 AND archived_file IS NOT NULL"
@@ -34,7 +54,16 @@ def list_archived_streams():
         stream["download"] = f"/archive/download/{stream['unique_id']}"
         del stream["user_snowflake"]
 
-    return jsonify(res), 200
+    return res
+
+
+@bp.route("/")
+def list_archived_streams():
+    archive = get_archived_streams()
+    if archive:
+        return render_template("archive.html", archive=archive)
+    else:
+        return render_template("archive.html")
 
 
 @bp.route("/download/<unique_id>")
@@ -45,12 +74,8 @@ def serve_archive(unique_id):
         one=True,
     )
     if res["archived_file"]:
-        user = query_db(
-            "SELECT username FROM user WHERE snowflake = ?",
-            [res["user_snowflake"]],
-            one=True,
-        )
-        filename = f"{user['username']} - {res['title']} - {res['start_date']}.mp4"
+        username = get_username_from_snowflake(res["user_snowflake"])
+        filename = f"{username} - {res['title']} - {res['start_date']}.mp4"
         return send_from_directory(
             environ.get("REC_PATH"),
             filename=f"{res['stream_key']}.mp4",

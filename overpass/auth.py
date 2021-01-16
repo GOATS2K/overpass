@@ -2,6 +2,7 @@
 
 from flask import redirect, url_for, Blueprint, abort, session, current_app
 from flask.json import jsonify
+from flask.templating import render_template
 
 # from flask import current_app as app
 from flask_discord import requires_authorization, Unauthorized, RateLimited
@@ -62,7 +63,7 @@ def login():
 @auth.route("/logout/")
 def logout():
     discord.revoke()
-    return "You have been logged out."
+    return render_template("alert.html", info="You've been logged out.")
 
 
 @auth.route("/callback/")
@@ -86,7 +87,7 @@ def callback():
             # Update last login time
             update_login_time(resp.id)
 
-        return redirect(url_for("auth.me"))
+        return redirect(url_for("index.home"))
     except RateLimited:
         return "We are currently being rate limited, try again later."
 
