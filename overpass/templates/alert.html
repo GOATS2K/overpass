@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block content %}
+{% include "header.html" %}
+{% if error %}
+<div class="m-3 alert alert-danger" role="alert">
+  {{error}}
+</div>
+{% endif %}
+{% if info %}
+<div class="m-3 alert alert-info" role="alert">
+  {{info}}
+</div>
+{% endif %}
+{% endblock %}

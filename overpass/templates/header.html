@@ -1,0 +1,25 @@
+<div id="header">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+            <a class="nav-link" href="{{url_for('index.home')}}">Home</a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" href="{{url_for('archive.list_archived_streams')}}">Archive</a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" href="{{url_for('stream.generate_stream_key')}}">Go Live</a>
+            </li>
+        </ul>
+        <form class="m-2 d-flex">
+             <a href="{{url_for('auth.logout')}}" class="btn btn-dark">Log Out</a>
+        </form>
+        </div>
+    </div>
+    </nav>
+</div>

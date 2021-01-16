@@ -14,12 +14,7 @@ discord = DiscordOAuth2Session()
 
 def create_app():
     app = Flask(__name__)
-    secret_key = os.environ.get("OVERPASS_SECRET_KEY")
-
-    try:
-        app.secret_key = secret_key.encode()
-    except AttributeError:
-        raise ValueError("The environment variable OVERPASS_SECRET_KEY is not set!")
+    app.secret_key = os.environ.get("OVERPASS_SECRET_KEY").encode() or os.urandom(16)
 
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
@@ -41,6 +36,7 @@ def create_app():
         from overpass.index import bp as index
         from overpass.archive import bp as archive
         from overpass.hls import bp as hls
+        from overpass.watch import bp as watch
 
         app.register_blueprint(index)
         app.register_blueprint(auth, url_prefix="/auth")
@@ -48,5 +44,6 @@ def create_app():
         app.register_blueprint(rtmp, url_prefix="/api/rtmp")
         app.register_blueprint(archive, url_prefix="/archive")
         app.register_blueprint(hls, url_prefix="/hls")
+        app.register_blueprint(watch, url_prefix="/watch")
 
         return app

@@ -1,9 +1,29 @@
-from flask import Blueprint, jsonify, send_from_directory
+from flask import Blueprint, jsonify, send_from_directory, redirect, url_for
 from overpass.stream_utils import rewrite_stream_playlist, get_stream_key_from_unique_id
 from overpass.db import query_db
 from os import environ
+from flask_discord import Unauthorized, requires_authorization
 
 bp = Blueprint("hls", __name__)
+
+
+@bp.errorhandler(Unauthorized)
+def redirect_discord_unauthorized(e):
+    return redirect(url_for("auth.login"))
+
+
+@bp.before_request
+@requires_authorization
+def require_auth():
+    pass
+
+
+@bp.after_request
+def disable_cache(r):
+    # https://stackoverflow.com/questions/31918035/javascript-only-works-after-opening-developer-tools-in-chrome
+    # Finally fixed the HLS buffer issue...
+    r.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    return r
 
 
 @bp.route("/<unique_id>/<file>")

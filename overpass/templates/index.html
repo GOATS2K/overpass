@@ -1,13 +1,36 @@
 {% extends "layout.html" %}
+
 {% block content %}
-    {% if authorized %}
-
-    <h1>Hello, {{ user.username }}</h1>
-
-    {% else %}
-
-    <h1>Sign in here.</h1>
-
-    <a href={{url_for('auth.login')}}><img src={{url_for('static', filename="sign_in_with_discord.png")}} /></a>
-    {% endif %}
+{% if authorized %}
+    {% include "header.html" %}
+        {% if streams is defined %}
+            {% for stream in streams %}
+            <div class="m-3 card">
+                <div class="card-header">
+                    <b>{{stream['username']}}</b> is streaming!
+                </div>
+            <div class="card-body">
+                <h5 class="card-title">{{stream['title']}}</h5>
+                <p class="card-text">{{stream['description']}}</p>
+                <a href="{{url_for('watch.watch_stream', username=stream['username'])}}" class="btn btn-primary">Watch</a>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-primary" role="alert">
+            No one is streaming at the moment. Would you like to <a href="{{url_for('stream.generate_stream_key')}}" class="alert-link">go live?</a>
+            </div>
+        {% endif %}
+{% else %}
+<div class="card text-center">
+  <div class="card-header">
+    Overpass
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">Sign in</h5>
+    <p class="card-text">Click the button to sign in with Discord. <br>
+    You must be a member of Satl's Discord server to gain access to the streaming platform.</p>
+    <a href={{url_for('auth.login')}}><img src={{url_for('static', filename="sign_in_with_discord_small.png")}} class="img-fluid"/></a>
+  </div>
+</div>
+{% endif %}
 {% endblock %}

@@ -76,8 +76,9 @@ def livestreams():
 @bp.route("/generate", methods=["GET", "POST"])
 def generate_stream_key():
     form = StreamGenerationForm(request.form)
+    server = f"rtmp://{environ.get('RTMP_SERVER')}"
     if request.method == "GET":
-        return render_template("stream/generate.html", form=form)
+        return render_template("stream/generate.html", form=form, server=server)
     else:
         user = discord.fetch_user()
         snowflake = user.id
@@ -94,7 +95,12 @@ def generate_stream_key():
             unlisted = form.unlisted.data
 
             return_str = render_template(
-                "stream/generate.html", form=form, key=stream_key, id=unique_id
+                "stream/generate.html",
+                form=form,
+                key=stream_key,
+                id=unique_id,
+                unlisted=unlisted,
+                server=server,
             )
         else:
             req_json = request.get_json()
