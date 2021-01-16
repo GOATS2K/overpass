@@ -3,7 +3,6 @@ A self-hosted Twtich alternative, powered by nginx-rtmp.
 
 Features include authentication via Discord and a web player.
 
-
 # Setup
 
 - Clone the repository
@@ -17,21 +16,22 @@ Create an empty `.env` in the projects' root directory which contains the follow
 DISCORD_CLIENT_ID =
 DISCORD_CLIENT_SECRET = ""
 DISCORD_REDIRECT_URI = ""
-SECRET_KEY = (whatever os.urandom spits out after the byte symbol)
+OVERPASS_SECRET_KEY = (whatever os.urandom spits out after the byte symbol)
 
 HLS_PATH = ""
 REC_PATH = ""
+RTMP_SERVER = "127.0.0.1:1935/live"
 ```
 
 - Run `flask init-db`
-- Run `flask run`
+- Run `flask run` (only in dev environments)
 
-## Streaming server setup
+# Streaming server setup
 
 ```
 rtmp {
     server {
-        listen 1940;
+        listen 1935;
         on_publish http://127.0.0.1:5000/api/rtmp/connect;
         on_done http://127.0.0.1:5000/api/rtmp/done;
 
@@ -51,4 +51,17 @@ rtmp {
 }
 
 
+```
+
+# Deploying to production
+
+`gunicorn -w 4 app:app --log-level=debug`
+
+## NGINX setup
+```
+location / {
+    proxy_pass http://127.0.0.1:8000;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
 ```

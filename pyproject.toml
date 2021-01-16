@@ -12,6 +12,7 @@ flask-discord = "^0.1.63"
 pyopenssl = "^19.1.0"
 python-dotenv = "^0.15.0"
 flask-wtf = "^0.14.3"
+gunicorn = "^20.0.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
