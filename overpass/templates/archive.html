@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+
+{% block content %}
+{% include "header.html" %}
+{% if archive is defined %}
+    {% for stream in archive %}
+    <div class="m-3 card">
+    <div class="card-header">
+        Streamed by <b>{{stream['username']}}</b> at {{stream['start_date']}}
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">{{stream['title']}}</h5>
+        <p class="card-text">{{stream['description']}}</p>
+        <a href="{{url_for('watch.watch_stream', username=stream['username'], unique_id=stream['unique_id'])}}" class="btn btn-primary">Watch</a>
+    </div>
+    </div>
+    {% endfor %}
+{% else %}
+<div class="alert alert-primary" role="alert">
+   There are no streams in the archive yet.
+</div>
+{% endif %}
+{% endblock %}

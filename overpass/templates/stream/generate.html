@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block content %}
+{% include "header.html" %}
+<div class="alert alert-primary" role="alert">
+  Streaming server: <b>{{ server }}</b>
+</div>
+<form method="post" action="{{url_for('stream.generate_stream_key')}}">
+    <!-- Perhaps we should use WTForms instead. -->
+    <div class="m-2 form-group">
+        {{ form.title.label }}
+        {{ form.title(class="form-control") }}
+    </div>
+    <div class="m-2 form-group">
+        {{ form.category.label }}
+        {{ form.category(class="form-control") }}
+    </div>
+    <div class="m-2 form-group">
+        {{ form.description.label }}
+        {{ form.description(class="form-control") }}
+    </div>
+    <div class="m-2 form-check">
+        {{ form.archivable.label }}
+        {{ form.archivable(class="form-check-input") }}
+    </div>
+    <div class="m-2 form-check">
+        {{ form.unlisted.label }}
+        {{ form.unlisted(class="form-check-input") }}
+    </div>
+    <button type="submit" class="btn btn-primary">Generate stream key</button>
+</form>
+{% if key %}
+<div class="alert alert-success" role="alert">
+Stream key: <b>{{ key }}</b>
+</div>
+{% endif %}
+{% if unlisted %}
+<div class="alert alert-info" role="alert">
+  Your unlisted stream will be available <a href="{{url_for('watch.watch_stream', username="bootie-", unique_id=id)}}" class="alert-link">here</a>.
+</div>
+{% endif %}
+{% endblock %}
