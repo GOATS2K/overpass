@@ -1,15 +1,17 @@
 from overpass import create_app
-from dotenv import load_dotenv
 import logging
+import config
+import os
 
-load_dotenv(".env")
-app = create_app()
-
-if __name__ != "__main__":
+if os.environ.get("FLASK_ENV") == "development":
+    app = create_app(config.DevConfig())
+    app.logger.info("Development environment detected.")
+else:
+    app = create_app(config.ProdConfig())
     gunicorn_logger = logging.getLogger("gunicorn.error")
     app.logger.handlers = gunicorn_logger.handlers
     app.logger.setLevel(gunicorn_logger.level)
-    app.logger.info(f"Secret key: {app.secret_key}")
+    app.logger.info("No environment variable set, using production config.")
 
 if __name__ == "__main__":
     app.run()
