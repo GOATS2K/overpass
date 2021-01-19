@@ -1,5 +1,5 @@
 # overpass
-A self-hosted Twtich alternative, powered by nginx-rtmp.
+A self-hosted Twitch alternative, powered by nginx-rtmp.
 
 Features include authentication via Discord and a web player.
 

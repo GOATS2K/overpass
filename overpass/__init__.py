@@ -3,6 +3,7 @@ from flask_discord import DiscordOAuth2Session
 import os
 from overpass.db import init_app, close_db, init_db_command
 from dotenv import load_dotenv
+import config
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, ".env"))
@@ -12,17 +13,12 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 discord = DiscordOAuth2Session()
 
 
-def create_app():
+def create_app(config_instance):
     app = Flask(__name__)
-    app.secret_key = os.environ.get("OVERPASS_SECRET_KEY").encode() or os.urandom(16)
+    app.config.from_object(config_instance)
 
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
-
-    app.config["DATABASE"] = "overpass.db"
-    app.config["DISCORD_CLIENT_ID"] = os.environ.get("DISCORD_CLIENT_ID")
-    app.config["DISCORD_CLIENT_SECRET"] = os.environ.get("DISCORD_CLIENT_SECRET")
-    app.config["DISCORD_REDIRECT_URI"] = os.environ.get("DISCORD_REDIRECT_URI")
 
     discord.init_app(app)
     init_app(app)
