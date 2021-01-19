@@ -48,5 +48,11 @@ def init_app(app):
 @with_appcontext
 def init_db_command():
     """Clear the existing data and create new tables."""
-    init_db()
-    click.echo("Initialized the database.")
+    click.echo(
+        f"You're now about to initialize the following database file: {current_app.config['DATABASE']}"
+    )
+    if click.confirm("Are you sure about this?"):
+        init_db()
+        click.secho("Initialized the database.", fg="green")
+    else:
+        click.secho("Initialization aborted.", fg="red")
