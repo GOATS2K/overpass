@@ -24,7 +24,7 @@ def require_auth():
 @bp.route("/<username>/<unique_id>")
 def watch_stream(username, unique_id=None):
     stream = get_livestreams_by_username(username)
-    if stream:
+    if stream and not unique_id:
         return render_template("stream/watch.html", live=True, stream=stream)
     elif unique_id:
         # Lets first check if its an unlisted stream
@@ -50,4 +50,3 @@ def watch_stream(username, unique_id=None):
                 return render_template("alert.html", error="Invalid stream key.")
     else:
         return render_template("stream/watch.html")
-
