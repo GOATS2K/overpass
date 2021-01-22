@@ -34,7 +34,6 @@ def create_app(config_instance):
         from overpass.archive import bp as archive
         from overpass.hls import bp as hls
         from overpass.watch import bp as watch
-        from overpass.profile import bp as profile
         from overpass.manage_user import bp as manage
 
         app.register_blueprint(index)
