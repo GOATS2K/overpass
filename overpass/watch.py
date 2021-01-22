@@ -31,7 +31,7 @@ def get_archived_stream(unique_id, private=False):
 
 def return_stream_page(unique_id, stream):
     return render_template(
-        "stream/watch.html",
+        "watch.html",
         id=unique_id,
         stream=stream,
         archive_link=stream["download"],
@@ -45,31 +45,35 @@ def watch_stream(username, unique_id=None):
     stream = get_livestreams_by_username(username)
     if stream and not unique_id:
         # Regular livestream
-        return render_template("stream/watch.html", live=True, stream=stream)
-    elif unique_id:
+        return render_template("watch.html", live=True, stream=stream)
+
+    if unique_id:
         # Lets first check if its an unlisted stream
         unlisted = get_unlisted_livestreams_by_username(username)
         if unlisted:
             # Unlisted stream
-            return render_template("stream/watch.html", live=True, stream=unlisted)
-        else:
-            # It's an archived stream at this point
-            try:
-                stream = get_archived_stream(unique_id)
+            return render_template("watch.html", live=True, stream=unlisted)
+
+        # It's an archived stream at this point
+        try:
+            stream = get_archived_stream(unique_id)
+            return return_stream_page(unique_id, stream)
+        except StopIteration:
+            pass
+
+        # Private stream
+        try:
+            user = discord.fetch_user()
+            stream = get_archived_stream(unique_id, private=True)
+            if stream["user_snowflake"] == user.id:
                 return return_stream_page(unique_id, stream)
-            except StopIteration:
-                # It might be a private stream
-                user = discord.fetch_user()
-                try:
-                    stream = get_archived_stream(unique_id, private=True)
-                    if stream["user_snowflake"] == user.id:
-                        return return_stream_page(unique_id, stream)
-                    else:
-                        return render_template(
-                            "alert.html", error="Invalid stream key."
-                        )
-                except StopIteration:
-                    # The stream ID doesn't exist at all at this point
-                    return render_template("alert.html", error="Invalid stream key.")
-    else:
-        return render_template("stream/watch.html")
+            else:
+                return render_template("alert.html", error="Invalid stream key.")
+        except StopIteration:
+            # The stream ID doesn't exist at all at this point
+            return (
+                render_template("alert.html", error="Invalid stream key."),
+                404,
+            )
+
+    return render_template("watch.html")
