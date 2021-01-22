@@ -20,7 +20,7 @@ Home
   <div class="card-body">
     <h5 class="card-title">{{stream['title']}}</h5>
     <p class="card-text">{{stream['description']}}</p>
-    <a href="{{url_for('watch.watch_stream', username=stream['username'])}}" class="btn btn-primary">Watch</a>
+    <a href="{{url_for('watch.watch_stream', username=stream['username'])}}" class="btn btn-dark"><i class="fas fa-play-circle"></i> Play</a>
   </div>
 </div>
   {% endfor %}
