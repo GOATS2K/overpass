@@ -19,7 +19,7 @@ auth = Blueprint("auth", __name__)
 def verify():
     """ Verifies if user exists in the Discord guild """
     guilds = discord.fetch_guilds()
-    user_is_in_guild = next((i for i in guilds if i.id == DISCORD_GUILD_ID), False)
+    user_is_in_guild = next((i for i in guilds if i.id == int(DISCORD_GUILD_ID)), False)
     if user_is_in_guild:
         return True
 
