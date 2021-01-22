@@ -41,7 +41,6 @@ def return_stream_page(unique_id, stream):
 @bp.route("/<username>")
 @bp.route("/<username>/<unique_id>")
 def watch_stream(username, unique_id=None):
-    # ugh this function is so messy...
     stream = get_livestreams_by_username(username)
     if stream and not unique_id:
         # Regular livestream
