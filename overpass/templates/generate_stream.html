@@ -1,5 +1,7 @@
 {% extends "layout.html" %}
-
+{% block title %}
+Go Live
+{% endblock %}
 {% block content %}
 {% include "header.html" %}
 <div class="alert alert-primary" role="alert">
@@ -7,17 +9,14 @@
 </div>
 <form method="post" action="{{url_for('stream.generate_stream_key')}}">
     <!-- Perhaps we should use WTForms instead. -->
-    <div class="m-2 form-group">
-        {{ form.title.label }}
-        {{ form.title(class="form-control") }}
+    <div class="my-3 form-group">
+        {{ form.title(class="form-control", placeholder="Title") }}
     </div>
-    <div class="m-2 form-group">
-        {{ form.category.label }}
-        {{ form.category(class="form-control") }}
+    <div class="my-3 form-group">
+        {{ form.category(class="form-control", placeholder="Category") }}
     </div>
-    <div class="m-2 form-group">
-        {{ form.description.label }}
-        {{ form.description(class="form-control") }}
+    <div class="my-3 form-group">
+        {{ form.description(class="form-control", placeholder="Description") }}
     </div>
     <div class="m-2 form-check">
         {{ form.archivable.label }}
@@ -27,7 +26,7 @@
         {{ form.unlisted.label }}
         {{ form.unlisted(class="form-check-input") }}
     </div>
-    <button type="submit" class="btn btn-primary">Generate stream key</button>
+    <button type="submit" class="btn btn-dark"><i class="fas fa-key"></i> Generate stream key</button>
 </form>
 {% if key %}
 <div class="alert alert-success" role="alert">
@@ -36,7 +35,7 @@ Stream key: <b>{{ key }}</b>
 {% endif %}
 {% if unlisted %}
 <div class="alert alert-info" role="alert">
-  Your unlisted stream will be available <a href="{{url_for('watch.watch_stream', username="bootie-", unique_id=id)}}" class="alert-link">here</a>.
+  Your unlisted stream will be available <a href="{{url_for('watch.watch_stream', username=user.username, unique_id=id)}}" class="alert-link">here</a>.
 </div>
 {% endif %}
 {% endblock %}
