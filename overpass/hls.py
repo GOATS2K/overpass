@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, send_from_directory, redirect, url_for
+from flask import Blueprint, abort, send_from_directory, redirect, url_for
 from overpass.stream_utils import rewrite_stream_playlist, get_stream_key_from_unique_id
 from overpass.db import query_db
 from os import environ
@@ -43,21 +43,22 @@ def serve_stream(unique_id, file):
     /watch/klzfls156/1.ts
     We give them HLS_DIR/1451fgsa-1.ts
     """
-    # This will probably be re-written in NGINX in the end
     stream_key = get_stream_key_from_unique_id(unique_id)
     res = query_db(
-        "SELECT end_date FROM stream WHERE stream_key = ?", [stream_key], one=True
+        "SELECT end_date FROM stream WHERE stream_key = ?",
+        [stream_key],
+        one=True,
     )
     if stream_key and not res["end_date"]:
         if file == "index.m3u8":
-            rewrite_stream_playlist(environ.get("HLS_PATH"), stream_key)
-            return send_from_directory(
-                environ.get("HLS_PATH"), f"{stream_key}-index.m3u8"
-            )
+            try:
+                rewrite_stream_playlist(environ.get("HLS_PATH"), stream_key)
+                return send_from_directory(
+                    environ.get("HLS_PATH"), f"{stream_key}-index.m3u8"
+                )
+            except FileNotFoundError:
+                return abort(404)
         else:
             return send_from_directory(environ.get("HLS_PATH"), f"{stream_key}-{file}")
-    else:
-        return (
-            jsonify({"message": "Invalid stream ID or the stream has just ended."}),
-            404,
-        )
+
+    return abort(404)
