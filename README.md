@@ -51,7 +51,7 @@ rtmp {
             hls_path /your/hls/path;
             hls_fragment 3;
             hls_playlist_length 60;
-            exec_record_done bash -c "/usr/bin/ffmpeg -i $path -acodec copy -vcodec copy /your/recording/path/$basename.mp4 && rm $path";
+            exec_record_done bash -c "/usr/bin/ffmpeg -i $path -acodec copy -vcodec copy -movflags +faststart /your/recording/path/$basename.mp4 && rm $path";
          }
     }
 }
