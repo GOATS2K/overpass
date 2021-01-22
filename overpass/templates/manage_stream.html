@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block title %}
+Edit Stream
+{% endblock %}
+
+{% block content %}
+{% include "header.html" %}
+{% if update %}
+<div class="alert alert-success" role="alert">
+Stream settings updated.
+</div>
+{% endif %}
+<form method="post" action="{{url_for('stream.manage_stream', unique_id=unique_id)}}">
+    <div class="m-2 form-group">
+        {{ form.title.label }}
+        {{ form.title(class="form-control") }}
+    </div>
+    <div class="m-2 form-group">
+        {{ form.category.label }}
+        {{ form.category(class="form-control") }}
+    </div>
+    <div class="m-2 form-group">
+        {{ form.description.label }}
+        {{ form.description(class="form-control") }}
+    </div>
+    <div class="m-2 form-check">
+        {{ form.archivable.label }}
+        {{ form.archivable(class="form-check-input") }}
+    </div>
+    <div class="m-2 form-check">
+        {{ form.unlisted.label }}
+        {{ form.unlisted(class="form-check-input") }}
+    </div>
+    <button type="submit" class="btn btn-dark"><i class="fas fa-check-circle"></i> Apply Changes</button>
+</form>
+{% endblock %}

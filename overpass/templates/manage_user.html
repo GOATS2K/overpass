@@ -1,0 +1,100 @@
+{% extends "layout.html" %}
+{% block title %}
+Manage Profile
+{% endblock %}
+
+{% block content %}
+{% include 'header.html' %}
+<h4>User Info</h4>
+<div class="mb-4 card">
+  <div class="card-body ">
+    <div class="container">
+      <div class="row">
+        {% if user['avatar'] %}
+        <div class="col-md-auto">
+         <img src={{user['avatar']}} class="img-fluid" />
+        </div>
+        {% endif %}
+        <div class="col-sm">
+          <h5 class="card-title">{{user['username']}}</h5>
+          <p class="mb-0 card-text">Last login date: {{user['last_login_date']}} UTC</p>
+          <p class="mb-0 card-text">Discord User ID: {{user['snowflake']}}</p>
+        </div>
+      </div>
+  </div>
+  </div>
+</div>
+{% if streams is defined %}
+<h5>My streams</h5>
+  <table class="table table-borderless">
+  <thead>
+    <tr>
+      <th scope="col">Date</th>
+      <th scope="col">Title</th>
+      <th scope="col">Duration</th>
+      <th scope="col">Status</th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for stream in streams %}
+    <tr>
+      {% if stream['start_date'] %}
+      <th scope="row">{{ stream['start_date'] }} UTC</th>
+      {% else %}
+      <th scope="row">Not Started Yet</th>
+      {% endif %}
+      <td>{{ stream['title'] }}</td>
+      {% if stream["duration"] %}
+      <td>{{ stream['duration'] }}</td>
+      {% else %}
+      <td><b>N/A</b></td>
+      {% endif %}
+      <td>
+        <div class="d-flex flex-wrap">
+        <!-- Bottom border is set here due to wrapping on small viewports -->
+          {% if not stream["duration"] and stream["start_date"] %}
+          <span class="me-1 mb-1 badge bg-danger">LIVE</span>
+          {% endif %}
+          {% if stream["archivable"] %}
+          <span class="me-1 mb-1 badge bg-dark">Archived</span>
+          {% else %}
+          <span class="me-1 mb-1 badge bg-secondary">Not Archived</span>
+          {% endif %}
+          {% if stream["unlisted"] %}
+          <span class="me-1 mb-1 badge bg-dark">Unlisted</span>
+          {% endif %}
+        </div>
+      </td>
+      <td>
+        <div class="d-inline-flex">
+          <a class="mx-1 text-decoration-none btn-sm btn-dark" href="{{url_for('stream.manage_stream', unique_id=stream['unique_id'])}}"><i class="fas fa-pen"></i> Edit Stream</a>
+          {% if not stream["duration"] and not stream["unlisted"] %}
+          <a class="mx-1 text-decoration-none btn-sm btn-dark" href="{{url_for('watch.watch_stream', username=user['username'])}}"><i class="fas fa-play-circle"></i> Play</a>
+          {% else %}
+          <a class="mx-1 text-decoration-none btn-sm btn-dark" href="{{url_for('watch.watch_stream', username=user['username'], unique_id=stream['unique_id'])}}"><i class="fas fa-play-circle"></i> Play</a>
+          {% endif %}
+          <a class="mx-1 text-decoration-none btn-sm btn-dark" data-bs-toggle="collapse" href="#description-{{ loop.index }}" role="button" aria-expanded="false" aria-controls="description-{{ loop.index }}"><i class="fas fa-caret-down fa-lg"></i> Details</a>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <th scope="row" colspan=4>
+        <div class="collapse" id="description-{{ loop.index }}">
+            <div class="card card-body" style="font-weight: normal">
+              {{ stream["description"] | nl2br }}
+              <div class="d-flex">
+                <span class="me-1 mb-1 badge bg-dark">Stream Key: {{ stream["stream_key"] }}</span>
+                <span class="me-1 mb-1 badge bg-dark">Unique ID: {{ stream["unique_id"] }}</span>
+              </div>
+            </div>
+        </div>
+      </th>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+  {% endif %}
+{% endblock %}
+
+
