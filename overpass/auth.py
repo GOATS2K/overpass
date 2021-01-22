@@ -31,7 +31,7 @@ def add_user(username, snowflake, avatar):
     current_app.logger.info(f"Adding user {username} to User table")
     db.execute(
         "INSERT INTO user (username, snowflake, avatar, last_login_date) VALUES (?, ?, ?, ?)",
-        (username, snowflake, avatar, current_date),
+        (username, snowflake, avatar, current_date.strftime("%Y-%m-%d %H:%M:%S")),
     )
     db.commit()
 
@@ -51,7 +51,7 @@ def update_login_time(snowflake):
     db = get_db()
     db.execute(
         "UPDATE user SET last_login_date = ? WHERE snowflake = ?",
-        (current_date, snowflake),
+        (current_date.strftime("%Y-%m-%d %H:%M:%S"), snowflake),
     )
     db.commit()
 
