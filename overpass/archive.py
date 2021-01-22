@@ -5,6 +5,7 @@ from flask import (
     redirect,
     url_for,
     request,
+    abort,
 )
 from flask.templating import render_template
 from overpass.db import query_db, get_db
@@ -13,6 +14,7 @@ from pathlib import Path
 from overpass.stream_utils import get_username_from_snowflake
 from flask_discord import Unauthorized, requires_authorization
 from overpass import discord
+from datetime import datetime
 
 
 bp = Blueprint("archive", __name__)
@@ -46,7 +48,7 @@ def archive_stream(stream_key, private=False):
 
 
 def get_archived_streams(private=False):
-    items = "id, user_snowflake, start_date, title, description, category, unique_id"
+    items = "id, user_snowflake, start_date, end_date, title, description, category, unique_id"
     if private:
         res = query_db(f"SELECT {items} FROM stream WHERE archived_file IS NOT NULL")
     else:
@@ -54,6 +56,8 @@ def get_archived_streams(private=False):
             f"SELECT {items} FROM stream WHERE unlisted = 0 AND archivable = 1 AND archived_file IS NOT NULL"
         )
     for stream in res:
+        duration = stream["end_date"] - stream["start_date"]
+        stream["duration"] = str(duration)
         stream["username"] = get_username_from_snowflake(stream["user_snowflake"])
         stream["download"] = f"/archive/download/{stream['unique_id']}"
         if not private:
@@ -94,4 +98,6 @@ def serve_archive(unique_id):
         return serve_file(res)
     elif res["archivable"] == 1:
         return serve_file(res)
+    else:
+        return abort(404)
     # Should render a 404 if the stream is unlisted
