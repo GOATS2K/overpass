@@ -9,8 +9,9 @@ from flask_discord import requires_authorization, Unauthorized, RateLimited
 from overpass import discord
 from overpass.db import get_db
 from datetime import datetime
+import os
 
-DISCORD_GUILD_ID = 793828987666432050
+DISCORD_GUILD_ID = os.environ.get("DISCORD_GUILD_ID") or None
 
 auth = Blueprint("auth", __name__)
 
@@ -30,7 +31,7 @@ def add_user(username, snowflake, avatar):
     current_app.logger.info(f"Adding user {username} to User table")
     db.execute(
         "INSERT INTO user (username, snowflake, avatar, last_login_date) VALUES (?, ?, ?, ?)",
-        (username, snowflake, avatar, current_date),
+        (username, snowflake, avatar, current_date.strftime("%Y-%m-%d %H:%M:%S")),
     )
     db.commit()
 
@@ -50,7 +51,7 @@ def update_login_time(snowflake):
     db = get_db()
     db.execute(
         "UPDATE user SET last_login_date = ? WHERE snowflake = ?",
-        (current_date, snowflake),
+        (current_date.strftime("%Y-%m-%d %H:%M:%S"), snowflake),
     )
     db.commit()
 
@@ -70,13 +71,13 @@ def logout():
 def callback():
     try:
         discord.callback()
-        current_app.logger.info(session)
-        if not verify():
-            # When the callback succeeds, the token for the user gets set in memory
-            # Since the user isn't a member of the guild, we reset the session
-            # to prevent access to the API
-            session.clear()
-            return abort(401)
+        if DISCORD_GUILD_ID:
+            if not verify():
+                # When the callback succeeds, the token for the user gets set in memory
+                # Since the user isn't a member of the guild, we reset the session
+                # to prevent access to the API
+                session.clear()
+                return abort(401)
 
         resp = discord.fetch_user()
         # Assume successful login

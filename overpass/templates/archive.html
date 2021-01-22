@@ -1,20 +1,47 @@
 {% extends "layout.html" %}
-
+{% block title %}
+Archive
+{% endblock %}
 {% block content %}
 {% include "header.html" %}
+<h5>Archive</h5>
 {% if archive is defined %}
+  <table class="table table-borderless">
+  <thead>
+    <tr>
+      <th scope="col">Date</th>
+      <th scope="col">User</th>
+      <th scope="col">Title</th>
+      <th scope="col">Duration</th>
+      <th scope="col"></th>
+    </tr>
+  </thead>
+  <tbody>
     {% for stream in archive %}
-    <div class="m-3 card">
-    <div class="card-header">
-        Streamed by <b>{{stream['username']}}</b> at {{stream['start_date']}}
-    </div>
-    <div class="card-body">
-        <h5 class="card-title">{{stream['title']}}</h5>
-        <p class="card-text">{{stream['description']}}</p>
-        <a href="{{url_for('watch.watch_stream', username=stream['username'], unique_id=stream['unique_id'])}}" class="btn btn-primary">Watch</a>
-    </div>
-    </div>
-    {% endfor %}
+    <tr>
+      <th scope="row">{{ stream['start_date'] }} UTC</th>
+      <td>{{ stream['username'] }}</td>
+      <td>{{ stream['title'] }}</td>
+      <td>{{ stream["duration"] }}</td>
+      <td>
+        <div class="d-flex">
+          <a class="mx-1 text-decoration-none btn-sm btn-dark" href="{{url_for('watch.watch_stream', username=stream['username'], unique_id=stream['unique_id'])}}"><i class="fas fa-play-circle"></i> Play</a>
+          <a class="mx-1 text-decoration-none btn-sm btn-dark" data-bs-toggle="collapse" href="#description-{{ loop.index }}" role="button" aria-expanded="false" aria-controls="description-{{ loop.index }}"><i class="fas fa-caret-down fa-lg"></i> Details</a>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <th scope="row" colspan=4>
+        <div class="collapse" id="description-{{ loop.index }}">
+            <div class="card card-body" style="font-weight: normal">
+              {{ stream["description"] | nl2br }}
+            </div>
+        </div>
+      </th>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
 {% else %}
 <div class="alert alert-primary" role="alert">
    There are no streams in the archive yet.
