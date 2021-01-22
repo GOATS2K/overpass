@@ -44,7 +44,6 @@ def create_app(config_instance):
         app.register_blueprint(archive, url_prefix="/archive")
         app.register_blueprint(hls, url_prefix="/hls")
         app.register_blueprint(watch, url_prefix="/watch")
-        app.register_blueprint(profile, url_prefix="/profile")
         app.register_blueprint(manage, url_prefix="/manage")
 
         from overpass.jinja_filters import nl2br
