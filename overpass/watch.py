@@ -21,8 +21,8 @@ def require_auth():
     pass
 
 
-def get_archived_stream(unique_id, private=False):
-    archived_streams = get_archived_streams(private=private)
+def get_archived_stream(unique_id, all_metadata=False, private=False):
+    archived_streams = get_archived_streams(all_metadata=all_metadata, private=private)
     stream = next(
         stream for stream in archived_streams if stream["unique_id"] == unique_id
     )
@@ -31,10 +31,7 @@ def get_archived_stream(unique_id, private=False):
 
 def return_stream_page(unique_id, stream):
     return render_template(
-        "watch.html",
-        id=unique_id,
-        stream=stream,
-        archive_link=stream["download"],
+        "watch.html", id=unique_id, stream=stream, archive_link=stream["download"],
     )
 
 
@@ -57,6 +54,14 @@ def watch_stream(username, unique_id=None):
         try:
             stream = get_archived_stream(unique_id)
             return return_stream_page(unique_id, stream)
+        except StopIteration:
+            pass
+
+        # Unlisted and archived
+        try:
+            stream = get_archived_stream(unique_id, all_metadata=True, private=True)
+            if bool(stream["archivable"]) and bool(stream["unlisted"]):
+                return return_stream_page(unique_id, stream)
         except StopIteration:
             pass
 
