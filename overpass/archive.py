@@ -47,14 +47,19 @@ def archive_stream(stream_key, private=False):
     db.commit()
 
 
-def get_archived_streams(private=False):
-    items = "id, user_snowflake, start_date, end_date, title, description, category, unique_id"
+def get_archived_streams(all_metadata=False, private=False):
+    if all_metadata:
+        items = "*"
+    else:
+        items = "id, user_snowflake, start_date, end_date, title, description, category, unique_id"
+
     if private:
         res = query_db(f"SELECT {items} FROM stream WHERE archived_file IS NOT NULL")
     else:
         res = query_db(
             f"SELECT {items} FROM stream WHERE unlisted = 0 AND archivable = 1 AND archived_file IS NOT NULL"
         )
+
     for stream in res:
         duration = stream["end_date"] - stream["start_date"]
         stream["duration"] = str(duration)
@@ -96,7 +101,7 @@ def serve_archive(unique_id):
     )
     if user.id == res["user_snowflake"]:
         return serve_file(res)
-    elif res["archivable"] == 1:
+    elif bool(res["archivable"]):
         return serve_file(res)
     else:
         return abort(404)
