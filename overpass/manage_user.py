@@ -26,7 +26,7 @@ def me():
         "SELECT * FROM user WHERE username = ?", [discord_user.username], one=True
     )
     streams = query_db(
-        "SELECT * FROM stream WHERE user_snowflake = ?", [user["snowflake"]]
+        "SELECT * FROM stream WHERE user_snowflake = ?", [discord_user.id]
     )
     if streams:
         for stream in streams:

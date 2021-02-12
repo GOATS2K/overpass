@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "overpass"
-version = "0.2.2"
+version = "0.2.3"
 description = "A self-hosted streaming platform with Discord authentication, auto-recording and more!"
 authors = ["GOATS2K <jp@glattetre.com>"]
 
