@@ -23,7 +23,7 @@ def require_auth():
 def me():
     discord_user = discord.fetch_user()
     user = query_db(
-        "SELECT * FROM user WHERE username = ?", [discord_user.username], one=True
+        "SELECT * FROM user WHERE user_snowflake = ?", [discord_user.id], one=True
     )
     streams = query_db(
         "SELECT * FROM stream WHERE user_snowflake = ?", [discord_user.id]
