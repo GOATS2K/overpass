@@ -14,7 +14,7 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 discord = DiscordOAuth2Session()
 
 
-def create_app(config_instance):
+def create_app(config_instance: config.Config) -> Flask:
     app = Flask(__name__)
     app.config.from_object(config_instance)
 
