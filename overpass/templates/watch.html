@@ -12,8 +12,7 @@ Watch
 
 {% if stream %}
 <div id="container">
-  {% if live %}
-    <video
+      <video
         id="my-video"
         class="video-js vjs-big-play-centered"
         controls
@@ -21,18 +20,10 @@ Watch
         width="768"
         height="432"
       >
+  {% if live %}
       <source src="{{url_for('hls.serve_stream', unique_id=stream['unique_id'], file='index.m3u8')}}" type="application/x-mpegURL" />
-    </video>
+      </video>
   {% else %}
-    <video
-      id="my-video"
-      class="video-js vjs-big-play-centered"
-      controls
-      preload="auto"
-      width="768"
-      height="432"
-      data-setup='{ "playbackRates": [0.5, 1, 1.5, 2] }'
-    >
       <source src="{{archive_link}}" type="video/mp4" />
       </video>
   {% endif %}
