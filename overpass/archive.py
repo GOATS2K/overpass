@@ -113,10 +113,7 @@ def list_archived_streams() -> Text:
         Text: Static page rendered by Flask.
     """
     archive = get_archived_streams()
-    if archive:
-        return render_template("archive.html", archive=archive)
-    else:
-        return render_template("archive.html")
+    return render_template("archive.html", archive=archive)
 
 
 @bp.route("/download/<unique_id>")
