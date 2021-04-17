@@ -5,7 +5,7 @@ Archive
 {% block content %}
 {% include "header.html" %}
 <h5>Archive</h5>
-{% if archive is defined %}
+{% if archive is defined and archive|length %}
   <table class="table table-borderless">
   <thead>
     <tr>
