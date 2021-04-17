@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, redirect, url_for, request
+from typing import Any, Dict, Text, Union
+from flask import Blueprint, render_template, redirect, url_for
 from overpass.stream_utils import (
     get_livestreams_by_username,
     get_unlisted_livestreams_by_username,
@@ -11,17 +12,33 @@ bp = Blueprint("watch", __name__)
 
 
 @bp.errorhandler(Unauthorized)
-def redirect_discord_unauthorized(e):
+def redirect_discord_unauthorized(e) -> Any:
     return redirect(url_for("auth.login"))
 
 
 @bp.before_request
 @requires_authorization
-def require_auth():
+def require_auth() -> None:
     pass
 
 
-def get_archived_stream(unique_id, all_metadata=False, private=False):
+def get_archived_stream(
+    unique_id: str, all_metadata: bool = False, private: bool = False
+) -> Dict[str, Any]:
+    """Get a single stream from the archive
+
+    Args:
+        unique_id (str): The stream's unique ID.
+        
+        all_metadata (bool, optional): Return all metadata about the stream.
+        Defaults to False.
+        
+        private (bool, optional): Include streams that aren't publically archived.
+        Defaults to False.
+
+    Returns:
+        Dict[str, Any]: Dict containing information about the stream.
+    """
     archived_streams = get_archived_streams(all_metadata=all_metadata, private=private)
     stream = next(
         stream for stream in archived_streams if stream["unique_id"] == unique_id
@@ -29,7 +46,16 @@ def get_archived_stream(unique_id, all_metadata=False, private=False):
     return stream
 
 
-def return_stream_page(unique_id, stream):
+def return_stream_page(unique_id: str, stream: Dict[str, Any]) -> Text:
+    """Helper function used in the watch_stream function
+
+    Args:
+        unique_id (str): The stream's unique ID.
+        stream (Dict[str, Any]): Metadata about the stream.
+
+    Returns:
+        Text: Static page rendered by Flask.
+    """
     return render_template(
         "watch.html", id=unique_id, stream=stream, archive_link=stream["download"],
     )
@@ -37,7 +63,18 @@ def return_stream_page(unique_id, stream):
 
 @bp.route("/<username>")
 @bp.route("/<username>/<unique_id>")
-def watch_stream(username, unique_id=None):
+def watch_stream(username: str, unique_id: Union[str, None] = None) -> Any:
+    """Generates a page to watch streams with.
+
+    Args:
+        username (str): The user whose stream to watch
+        unique_id (Union[str, None], optional): The unique ID of a stream.
+        This is only set if the stream is either private, or archived.
+        Defaults to None.
+
+    Returns:
+        Any: Static page rendered by Flask.
+    """
     stream = get_livestreams_by_username(username)
     if stream and not unique_id:
         # Regular livestream
