@@ -1,5 +1,6 @@
 # flake8: noqa E501
 
+from typing import Any, Dict, List, Union, Text
 from flask import (
     json,
     request,
@@ -14,15 +15,10 @@ import uuid
 from flask.templating import render_template
 from flask_discord import requires_authorization, Unauthorized
 from overpass import discord
-from overpass.db import get_db, query_db
-from overpass.stream_utils import (
-    get_stream_key_from_unique_id,
-    rewrite_stream_playlist,
-    get_username_from_snowflake,
-)
+from overpass.db import get_db, query_many, query_one
+from overpass.stream_utils import get_username_from_snowflake
 from pathlib import Path
 from os import environ
-from flask.helpers import send_from_directory
 from overpass.forms import StreamGenerationForm
 
 # from overpass.app import app
@@ -30,9 +26,39 @@ from overpass.forms import StreamGenerationForm
 bp = Blueprint("stream", __name__)
 
 
+@bp.errorhandler(Unauthorized)
+def redirect_discord_unauthorized(e) -> Any:
+    return redirect(url_for("auth.login"))
+
+
+@bp.before_request
+@requires_authorization
+def require_auth() -> None:
+    pass
+
+
 def add_stream_to_db(
-    snowflake, title, description, category, archivable, unique_id, stream_key, unlisted
-):
+    snowflake: int,
+    title: str,
+    description: str,
+    category: str,
+    archivable: bool,
+    unique_id: str,
+    stream_key: str,
+    unlisted: bool,
+) -> None:
+    """Adds the stream to the database.
+
+    Args:
+        snowflake (int): User ID of the user initiating the stream.
+        title (str): Title of the stream.
+        description (str): The stream's description.
+        category (str): The stream's category.
+        archivable (bool): Is the stream going to be publically archived?
+        unique_id (str): The stream's unique ID.
+        stream_key (str): The stream's stream key.
+        unlisted (bool): Is the stream unlisted?
+    """
     db = get_db()
     current_app.logger.info(
         f"Adding stream {title} by {snowflake} with stream key {stream_key} to database"
@@ -53,15 +79,30 @@ def add_stream_to_db(
     db.commit()
 
 
-def verify_livestream(stream_key):
-    stream_path = Path(environ.get("HLS_PATH")) / f"{stream_key}.m3u8"
+def verify_livestream(stream_key: str) -> bool:
+    """Verifies that the stream's playlist exists on disk.
+
+    Args:
+        stream_key (str): The stream's key
+
+    Returns:
+        bool: True if the playlist exists, false if not.
+    """
+    stream_path = Path(environ.get("HLS_PATH", "")) / f"{stream_key}.m3u8"
     if stream_path.exists():
         return True
+    else:
+        return False
 
 
-def get_current_livestreams():
+def get_current_livestreams() -> List[Dict[str, Any]]:
+    """Gets all ongoing livestreams
+
+    Returns:
+        List[Dict[str, Any]]: A list of all ongoing livestreams in a dict.
+    """
     items = "id, user_snowflake, start_date, title, description, category, stream_key, unique_id"
-    res = query_db(
+    res = query_many(
         f"SELECT {items} FROM stream WHERE start_date IS NOT NULL AND end_date IS NULL AND unlisted = 0"
     )
     for stream in res.copy():
@@ -78,18 +119,12 @@ def get_current_livestreams():
     return res
 
 
-@bp.errorhandler(Unauthorized)
-def redirect_discord_unauthorized(e):
-    return redirect(url_for("auth.login"))
+def update_db_fields(unique_id: str, **kwargs) -> None:
+    """Update the stream's properties in the database.
 
-
-@bp.before_request
-@requires_authorization
-def require_auth():
-    pass
-
-
-def update_db_fields(unique_id, **kwargs):
+    Args:
+        unique_id (str): The stream's unique ID.
+    """
     db = get_db()
     for key, value in kwargs.items():
         current_app.logger.info(f"Updating field '{key}' in stream {unique_id}")
@@ -101,18 +136,26 @@ def update_db_fields(unique_id, **kwargs):
 
 
 @bp.route("/manage/<unique_id>", methods=["GET", "POST"])
-def manage_stream(unique_id):
+def manage_stream(unique_id: str) -> Any:
+    """Manage a stream's properties via its unique ID. 
+
+    Args:
+        unique_id (str): The stream's unique ID.
+
+    Returns:
+        Any: A static page rendered by Flask.
+    """
     user = discord.fetch_user()
     form = StreamGenerationForm()
-    stream = query_db(
+    stream = query_one(
         "SELECT title, description, category, archivable, unlisted, user_snowflake FROM stream WHERE unique_id = ?",
         [unique_id],
-        one=True,
     )
 
     if not stream:
         return render_template("alert.html", error="Invalid stream ID."), 404
 
+    # Populate the stream editing form.
     form.title.data = stream["title"]
     form.description.data = stream["description"]
     form.category.data = stream["category"]
@@ -140,7 +183,7 @@ def manage_stream(unique_id):
 
 
 @bp.route("/generate", methods=["GET", "POST"])
-def generate_stream_key():
+def generate_stream_key() -> Any:
     form = StreamGenerationForm(request.form)
     server = f"rtmp://{environ.get('RTMP_SERVER')}"
     if request.method == "GET":
@@ -160,7 +203,18 @@ def generate_stream_key():
             archivable = form.archivable.data
             unlisted = form.unlisted.data
 
-            return_str = render_template(
+            add_stream_to_db(
+                snowflake,
+                title,
+                description,
+                category,
+                archivable,
+                unique_id,
+                stream_key,
+                unlisted,
+            )
+
+            return render_template(
                 "generate_stream.html",
                 form=form,
                 user=user,
@@ -169,34 +223,3 @@ def generate_stream_key():
                 unlisted=unlisted,
                 server=server,
             )
-        else:
-            req_json = request.get_json()
-            title = req_json.get("title", "No title")
-            description = req_json.get("description", "Unknown")
-            category = req_json.get("category", "Unknown")
-            archivable = req_json.get("archivable", False)
-            unlisted = req_json.get("unlisted", False)
-
-            return_str = (
-                jsonify(
-                    {
-                        "message": "Stream key generation completed.",
-                        "key": stream_key,
-                        "unique_id": unique_id,
-                    }
-                ),
-            )
-            200
-
-        add_stream_to_db(
-            snowflake,
-            title,
-            description,
-            category,
-            archivable,
-            unique_id,
-            stream_key,
-            unlisted,
-        )
-
-        return return_str
