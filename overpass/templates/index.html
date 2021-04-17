@@ -11,7 +11,7 @@ Home
 {% block content %}
 {% if authorized %}
 {% include "header.html" %}
-{% if streams is defined %}
+{% if streams is defined and streams|length %}
 {% for stream in streams %}
 <div class="m-3 card">
   <div class="card-header">
