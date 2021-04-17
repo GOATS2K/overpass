@@ -55,7 +55,7 @@ def serve_stream(unique_id: str, file: str) -> Any:
     if stream_key and not stream["end_date"]:
         if file == "index.m3u8":
             try:
-                rewrite_stream_playlist(environ.get("HLS_PATH", ""), stream_key)
+                rewrite_stream_playlist(stream_key)
                 return send_from_directory(
                     environ.get("HLS_PATH"), f"{stream_key}-index.m3u8"
                 )
