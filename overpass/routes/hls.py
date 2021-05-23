@@ -1,10 +1,14 @@
-from typing import Any
-from flask import Blueprint, abort, send_from_directory, redirect, url_for
-from requests.sessions import Request
-from overpass.stream_utils import rewrite_stream_playlist, get_stream_key_from_unique_id
-from overpass.db import query_one
 from os import environ
+from typing import Any
+
+from flask import Blueprint, abort, redirect, send_from_directory, url_for
 from flask_discord import Unauthorized, requires_authorization
+from overpass.db import query_one
+from overpass.stream_utils import (
+    get_stream_key_from_unique_id,
+    rewrite_stream_playlist,
+)
+from requests.sessions import Request
 
 bp = Blueprint("hls", __name__)
 
@@ -51,7 +55,9 @@ def serve_stream(unique_id: str, file: str) -> Any:
         Any: Serves file from HLS path if exists.
     """
     stream_key = get_stream_key_from_unique_id(unique_id)
-    stream = query_one("SELECT end_date FROM stream WHERE stream_key = ?", [stream_key])
+    stream = query_one(
+        "SELECT end_date FROM stream WHERE stream_key = ?", [stream_key]
+    )
     if stream_key and not stream["end_date"]:
         if file == "index.m3u8":
             try:
@@ -62,6 +68,8 @@ def serve_stream(unique_id: str, file: str) -> Any:
             except FileNotFoundError:
                 return abort(404)
         else:
-            return send_from_directory(environ.get("HLS_PATH"), f"{stream_key}-{file}")
+            return send_from_directory(
+                environ.get("HLS_PATH"), f"{stream_key}-{file}"
+            )
 
     return abort(404)

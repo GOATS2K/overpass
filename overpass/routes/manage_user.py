@@ -1,9 +1,10 @@
 from typing import Text
+
 from flask import Blueprint, redirect, url_for
 from flask.templating import render_template
 from flask_discord import Unauthorized, requires_authorization
-from overpass.db import query_many, query_one
 from overpass import discord
+from overpass.db import query_many, query_one
 
 bp = Blueprint("manage", __name__)
 
@@ -27,7 +28,9 @@ def me() -> Text:
         Text: Static page rendered by Flask.
     """
     discord_user = discord.fetch_user()
-    user = query_one("SELECT * FROM user WHERE snowflake = ?", [discord_user.id])
+    user = query_one(
+        "SELECT * FROM user WHERE snowflake = ?", [discord_user.id]
+    )
     streams = query_many(
         "SELECT * FROM stream WHERE user_snowflake = ?", [discord_user.id]
     )

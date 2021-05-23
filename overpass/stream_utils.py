@@ -35,8 +35,12 @@ def get_livestreams_by_username(username: str) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: The livestream's details.
     """
-    items = "user_snowflake, start_date, title, description, category, unique_id"
-    user_id = query_one("SELECT snowflake FROM user WHERE username = ?", [username])
+    items = (
+        "user_snowflake, start_date, title, description, category, unique_id"
+    )
+    user_id = query_one(
+        "SELECT snowflake FROM user WHERE username = ?", [username]
+    )
     stream = query_one(
         f"SELECT {items} FROM stream WHERE user_snowflake = ? AND unlisted = 0 AND end_date IS NULL AND start_date IS NOT NULL",  # noqa: E501
         [user_id["snowflake"]],
@@ -55,8 +59,12 @@ def get_unlisted_livestreams_by_username(username: str) -> Dict[str, Any]:
     Returns:
         Dict[str, Any]: The unlisted livestream.
     """
-    items = "user_snowflake, start_date, title, description, category, unique_id"
-    res = query_one("SELECT snowflake FROM user WHERE username = ?", [username])
+    items = (
+        "user_snowflake, start_date, title, description, category, unique_id"
+    )
+    res = query_one(
+        "SELECT snowflake FROM user WHERE username = ?", [username]
+    )
     stream = query_one(
         f"SELECT {items} FROM stream WHERE user_snowflake = ? AND unlisted = 1 AND end_date IS NULL AND start_date IS NOT NULL",  # noqa: E501
         [res["snowflake"]],
@@ -75,7 +83,9 @@ def get_username_from_snowflake(snowflake: int) -> str:
     Returns:
         str: The user's username.
     """
-    user = query_one("SELECT username FROM user WHERE snowflake = ?", [snowflake],)
+    user = query_one(
+        "SELECT username FROM user WHERE snowflake = ?", [snowflake],
+    )
     return user["username"]
 
 
@@ -88,7 +98,9 @@ def get_unique_stream_id_from_stream_key(stream_key: str) -> str:
     Returns:
         str: The unique ID.
     """
-    res = query_one("SELECT unique_id FROM stream WHERE stream_key = ?", [stream_key])
+    res = query_one(
+        "SELECT unique_id FROM stream WHERE stream_key = ?", [stream_key]
+    )
     return res["unique_id"]
 
 
@@ -101,5 +113,7 @@ def get_stream_key_from_unique_id(unique_id: str) -> str:
     Returns:
         str: The stream key.
     """
-    res = query_one("SELECT stream_key FROM stream WHERE unique_id = ?", [unique_id])
+    res = query_one(
+        "SELECT stream_key FROM stream WHERE unique_id = ?", [unique_id]
+    )
     return res["stream_key"]
