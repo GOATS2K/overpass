@@ -2,6 +2,7 @@ from os import environ
 from typing import Any
 
 from flask import Blueprint, abort, redirect, send_from_directory, url_for
+from flask.helpers import send_file
 from flask_discord import Unauthorized, requires_authorization
 from overpass.db import query_one
 from overpass.stream_utils import (
@@ -61,10 +62,8 @@ def serve_stream(unique_id: str, file: str) -> Any:
     if stream_key and not stream["end_date"]:
         if file == "index.m3u8":
             try:
-                rewrite_stream_playlist(stream_key)
-                return send_from_directory(
-                    environ.get("HLS_PATH"), f"{stream_key}-index.m3u8"
-                )
+                playlist = rewrite_stream_playlist(stream_key)
+                return send_file(playlist, mimetype="application/x-mpegURL")
             except FileNotFoundError:
                 return abort(404)
         else:

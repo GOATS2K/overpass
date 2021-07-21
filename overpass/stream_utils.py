@@ -1,10 +1,13 @@
-from typing import Any, Dict
-from overpass.db import query_one
-from flask import current_app
+from io import BytesIO
 from os import environ
+from typing import Any, Dict
+
+from flask import current_app
+
+from overpass.db import query_one
 
 
-def rewrite_stream_playlist(stream_key: str):
+def rewrite_stream_playlist(stream_key: str) -> BytesIO:
     """Re-write the stream's playlist file.
     This is run every time /hls/unique_id/index.m3u8 is requested.
 
@@ -15,15 +18,19 @@ def rewrite_stream_playlist(stream_key: str):
         stream_key (str): The stream's key.
     """
     path = environ.get("HLS_PATH", "")
+    playlist_bytes = BytesIO()
     current_app.logger.info(f"Rewriting playlist for {stream_key}")
     with open(f"{path}/{stream_key}.m3u8", "r") as infile:
         lines = infile.readlines()
 
-    with open(f"{path}/{stream_key}-index.m3u8", "w+") as outfile:
-        outfile.seek(0)
-        outfile.truncate()
-        for line in lines:
-            outfile.write(line.replace(f"{stream_key}-", ""))
+    for line in lines:
+        playlist_bytes.write(
+            str(line.replace(f"{stream_key}-", "")).encode("utf-8")
+        )
+
+    playlist_bytes.seek(0)
+
+    return playlist_bytes
 
 
 def get_livestreams_by_username(username: str) -> Dict[str, Any]:
@@ -84,7 +91,8 @@ def get_username_from_snowflake(snowflake: int) -> str:
         str: The user's username.
     """
     user = query_one(
-        "SELECT username FROM user WHERE snowflake = ?", [snowflake],
+        "SELECT username FROM user WHERE snowflake = ?",
+        [snowflake],
     )
     return user["username"]
 
