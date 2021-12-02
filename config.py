@@ -1,7 +1,9 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv(".env")
+if Path(".env").exists():
+    load_dotenv(".env")
 
 
 class Config(object):
@@ -16,9 +18,7 @@ class Config(object):
 class DevConfig(Config):
     DEBUG = True
     DATABASE = "overpass-dev.db"
-    SECRET_KEY = os.environ.get("OVERPASS_SECRET_KEY").encode() or os.urandom(
-        16
-    )
+    SECRET_KEY = os.environ.get("OVERPASS_SECRET_KEY").encode() or os.urandom(16)
 
 
 class ProdConfig(Config):
