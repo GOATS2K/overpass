@@ -1,0 +1,20 @@
+services:
+  overpass:
+    build: .
+    container_name: overpass
+    environment:
+      - HLS_PATH=/hls
+      - REC_PATH=/archive
+      - OVERPASS_SECRET_KEY=example_key_1337
+      - RTMP_SERVER="127.0.0.1:1935/live"
+      - DISCORD_CLIENT_ID=yourclientid
+      - DISCORD_CLIENT_SECRET=yourclientsecret
+      - DISCORD_REDIRECT_URI=yourredirecturi
+      - DISCORD_GUILD_ID=yoursecretguildid
+    volumes:
+      - /Users/jpg/Container Data/overpass/log:/logs:rw
+      - /Users/jpg/Container Data/overpass/archive:/archive:rw
+      - /Users/jpg/Container Data/overpass/hls:/hls:rw
+    ports:
+      - 1935:1935
+      - 8000:8000
