@@ -7,9 +7,7 @@ import sqlite3
 
 
 def make_dicts(cursor: sqlite3.Cursor, row: sqlite3.Row) -> dict:
-    return dict(
-        (cursor.description[idx][0], value) for idx, value in enumerate(row)
-    )
+    return dict((cursor.description[idx][0], value) for idx, value in enumerate(row))
 
 
 def get_db() -> sqlite3.Connection:
@@ -57,13 +55,14 @@ def init_app(app: Flask):
 
 
 @click.command("init-db")
+@click.option("--yes", type=click.BOOL, is_flag=True)
 @with_appcontext
-def init_db_command() -> None:
+def init_db_command(yes: bool) -> None:
     """Clear the existing data and create new tables."""
     click.echo(
         f"You're now about to initialize the following database file: {current_app.config['DATABASE']}"
     )
-    if click.confirm("Are you sure about this?"):
+    if yes or click.confirm("Are you sure about this?"):
         init_db()
         click.secho("Initialized the database.", fg="green")
     else:
