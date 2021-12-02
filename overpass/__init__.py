@@ -27,14 +27,14 @@ def create_app(config_instance: config.Config) -> Flask:
     with app.app_context():
         # Imports are done here to prevent circular import errors when
         # importing extensions from this file
-        from overpass.auth import auth
-        from overpass.stream_api import bp as stream
-        from overpass.rtmp_server_api import bp as rtmp
-        from overpass.index import bp as index
-        from overpass.archive import bp as archive
-        from overpass.hls import bp as hls
-        from overpass.watch import bp as watch
-        from overpass.manage_user import bp as manage
+        from overpass.routes.auth import auth
+        from overpass.routes.stream import bp as stream
+        from overpass.routes.rtmp_server_api import bp as rtmp
+        from overpass.routes.index import bp as index
+        from overpass.routes.archive import bp as archive
+        from overpass.routes.hls import bp as hls
+        from overpass.routes.watch import bp as watch
+        from overpass.routes.manage_user import bp as manage
 
         app.register_blueprint(index)
         app.register_blueprint(auth, url_prefix="/auth")
@@ -57,7 +57,8 @@ def create_app(config_instance: config.Config) -> Flask:
         def forbidden(e):
             return (
                 render_template(
-                    "alert.html", error="You are not allowed to perform this action."
+                    "alert.html",
+                    error="You are not allowed to perform this action.",
                 ),
                 403,
             )

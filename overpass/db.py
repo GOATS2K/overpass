@@ -7,13 +7,16 @@ import sqlite3
 
 
 def make_dicts(cursor: sqlite3.Cursor, row: sqlite3.Row) -> dict:
-    return dict((cursor.description[idx][0], value) for idx, value in enumerate(row))
+    return dict(
+        (cursor.description[idx][0], value) for idx, value in enumerate(row)
+    )
 
 
 def get_db() -> sqlite3.Connection:
     if "db" not in g:
         g.db = sqlite3.connect(
-            current_app.config["DATABASE"], detect_types=sqlite3.PARSE_DECLTYPES
+            current_app.config["DATABASE"],
+            detect_types=sqlite3.PARSE_DECLTYPES,
         )
         g.db.row_factory = make_dicts
 
