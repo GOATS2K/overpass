@@ -33,7 +33,7 @@ There is a Docker image for Overpass, which you can either build yourself with t
 
 This image is pre-configured to run Overpass in production mode with Gunicorn, so if you wish to develop on Overpass, you may need to change `docker/startup.sh` to execute `flask run`, and modifying the route to Overpass' API in the nginx configuration.
 
-_Continue reading if you wish to run Overpass on bare-metal, otherwise, you can use the example Docker Compose file._
+_Continue reading if you wish to run Overpass on bare-metal, otherwise, you can use the [example Docker Compose file](docker-compose.example)._
 
 ## Creating a config file
 **Note: If you are using Docker, set these values as environment variables. See the [example Docker Compose file](docker-compose.example). You will _not_ have to create the `.env` file.**
