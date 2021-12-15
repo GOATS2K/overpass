@@ -7,12 +7,13 @@ Overpass also lets you run a private instance for a users on a single Discord se
 Powered by nginx-rtmp.
 
 # Dependencies
-- Python 3.8 (I haven't tested other versions yet)
+- Python 3.8+
 - Nginx with the [nginx-rtmp module](https://github.com/arut/nginx-rtmp-module) installed
 - FFmpeg
 - A Discord app
 
-# Creating the Discord app
+# Getting Started
+## Creating the Discord app for Overpass
 Navigate to [Discord's Developer Portal](https://discord.com/developers/applications).
 
 - Select "New Application" in the top left corner
@@ -25,14 +26,17 @@ Navigate to [Discord's Developer Portal](https://discord.com/developers/applicat
 
 **Note:** If you wish to develop on Overpass, you will have to add `http://localhost:5000/auth/callback` to your list of redirect URIs.
 
+# Install
+## Docker Usage
 
-# Setup
+There is a Docker image for Overpass, which you can either build yourself with the Dockerfile, or [download from the Docker Hub](https://hub.docker.com/r/goats2k/overpass). 
 
-- Clone the repository
-- Create a virtual environment for the package
-- Install its dependencies
+This image is pre-configured to run Overpass in production mode with Gunicorn, so if you wish to develop on Overpass, you may need to change `docker/startup.sh` to execute `flask run`, and modifying the route to Overpass' API in the nginx configuration.
+
+_Continue reading if you wish to run Overpass on bare-metal, otherwise, you can use the example Docker Compose file._
 
 ## Creating a config file
+**Note: If you are using Docker, set these values as environment variables. See the [example Docker Compose file](docker-compose.example). You will _not_ have to create the `.env` file.**
 
 ### Generate a secret key
 

@@ -12,9 +12,9 @@ services:
       - DISCORD_REDIRECT_URI=yourredirecturi
       - DISCORD_GUILD_ID=yoursecretguildid
     volumes:
-      - /Users/jpg/Container Data/overpass/log:/logs:rw
-      - /Users/jpg/Container Data/overpass/archive:/archive:rw
-      - /Users/jpg/Container Data/overpass/hls:/hls:rw
+      - /home/user/overpass/log:/var/log/nginx:ro
+      - /home/user/overpass/archive:/archive:rw
+      - /home/user/overpass/hls:/hls:rw
     ports:
       - 1935:1935
       - 8000:8000
