@@ -6,11 +6,12 @@ from overpass.db import init_app, close_db, init_db_command
 from dotenv import load_dotenv
 import config
 
+if os.environ.get("FLASK_ENV") == "development":
+    os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
 basedir = os.path.abspath(os.path.dirname(__file__))
 load_dotenv(os.path.join(basedir, ".env"))
 
-
-os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 discord = DiscordOAuth2Session()
 
 

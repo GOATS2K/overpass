@@ -30,5 +30,7 @@ test.py
 dev_notes.md
 overpass/secrets.py
 .env
-overpass.db
+overpass*.db
+.devcontainer/
+
 docker-compose.yml
