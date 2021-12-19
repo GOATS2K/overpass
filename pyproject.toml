@@ -13,6 +13,8 @@ pyopenssl = "^19.1.0"
 python-dotenv = "^0.15.0"
 flask-wtf = "^0.14.3"
 gunicorn = "^20.0.4"
+fastapi = "^0.70.1"
+uvicorn = "^0.16.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
