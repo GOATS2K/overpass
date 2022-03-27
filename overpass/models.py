@@ -6,3 +6,4 @@ class User(pydantic.BaseModel):
     username: str
     avatar: Optional[str]
     last_login_date: str
+    
