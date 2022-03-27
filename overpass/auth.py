@@ -3,10 +3,13 @@
 from typing import Union
 
 from flask.globals import current_app
+from pydantic import parse_obj_as
 from overpass import discord
 from datetime import datetime
 from overpass.db import get_db
 import os
+
+from overpass.models import User
 
 DISCORD_GUILD_ID = os.environ.get("DISCORD_GUILD_ID") or ""
 
@@ -44,25 +47,27 @@ def add_user(username: str, snowflake: int, avatar: Union[str, None]) -> None:
         ),
     )
     db.commit()
-
-
-def check_if_user_exists(snowflake: int) -> bool:
-    """Returns True if user exists in database
+    
+    
+def get_user(snowflake: int) -> User:
+    """Returns a user from the db if one exists, else creates a new user in the database
 
     Args:
-        snowflake (int): User's ID
-
+        username (str): User's username
+        snowflake (int): User's account ID
+        avatar (Union[str, None]): User's avatar URL
+        
     Returns:
-        bool: User exists in database
+        User: user object
     """
     db = get_db()
     q = db.execute("SELECT * FROM user WHERE snowflake = ?", (snowflake,))
     result = q.fetchone()
 
     if result:
-        return True
-    else:
-        return False
+        return parse_obj_as(User, result)
+    return None
+    
 
 
 def update_login_time(snowflake: int) -> None:
@@ -76,5 +81,13 @@ def update_login_time(snowflake: int) -> None:
     db.execute(
         "UPDATE user SET last_login_date = ? WHERE snowflake = ?",
         (current_date.strftime("%Y-%m-%d %H:%M:%S"), snowflake),
+    )
+    db.commit()
+
+def update_user_avatar(snowflake: int, avatar: str) -> None:
+    db = get_db()
+    db.execute(
+        "UPDATE user SET avatar = ? WHERE snowflake = ?",
+        (avatar,snowflake),
     )
     db.commit()

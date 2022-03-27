@@ -2,13 +2,15 @@ from typing import Any, Text
 
 from flask import Blueprint, abort, current_app, redirect, session, url_for
 from flask.templating import render_template
+from matplotlib.pyplot import disconnect
 from flask_discord import RateLimited, Unauthorized
 from overpass import discord
 from overpass.auth import (
     DISCORD_GUILD_ID,
     add_user,
-    check_if_user_exists,
+    get_user,
     update_login_time,
+    update_user_avatar,
     verify,
 )
 
@@ -45,7 +47,7 @@ def callback() -> Any:
     """
     try:
         discord.callback()
-        user = discord.fetch_user()
+        discord_user = discord.fetch_user()
         if DISCORD_GUILD_ID:
             if not verify():
                 # When the callback succeeds, the token for the user gets
@@ -53,19 +55,22 @@ def callback() -> Any:
                 # Since the user isn't a member of the guild
                 # we reset the session to prevent access to the API
                 current_app.logger.error(
-                    f"Username {user.username} with ID {user.id} is not a member of the target guild"  # noqa: E501
+                    f"Username {discord_user.username} with ID {discord_user.id} is not a member of the target guild"  # noqa: E501
                 )
                 session.clear()
                 return abort(401)
 
         # Assume successful login
-        if not check_if_user_exists(user.id):
-            add_user(user.username, user.id, user.avatar_url)
-        else:
-            current_app.logger.info(f"User {user.username} has just signed in")
-            # Update last login time
+        user = get_user(discord_user.id)
+        if user:
+            if discord_user.avatar_url != user.avatar_url:
+                update_user_avatar(user.id, discord_user.avatar_url) # user in db becomes source of truth
+                
             update_login_time(user.id)
-
+            current_app.logger.info(f"User {user.username} has just signed in")
+        else:
+            add_user(discord_user.username, discord_user.id, discord_user.avatar_url)
+                       
         return redirect(url_for("index.home"))
     except RateLimited:
         return "We are currently being rate limited, try again later."
