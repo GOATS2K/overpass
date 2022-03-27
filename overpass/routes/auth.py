@@ -63,7 +63,7 @@ def callback() -> Any:
         # Assume successful login
         user = get_user(discord_user.id)
         if user:
-            if discord_user.avatar_url != user.avatar_url:
+            if discord_user.avatar_url != user.avatar:
                 update_user_avatar(user.id, discord_user.avatar_url) # user in db becomes source of truth
                 
             update_login_time(user.id)
