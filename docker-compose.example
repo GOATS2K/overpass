@@ -3,9 +3,6 @@ services:
     image: goats2k/overpass
     container_name: overpass
     environment:
-      - HLS_PATH=/hls
-      - REC_PATH=/archive
-      - OVERPASS_DATABASE_PATH=/database
       - OVERPASS_SECRET_KEY=example_key_1337
       - RTMP_SERVER=127.0.0.1:1935/live
       - DISCORD_CLIENT_ID=yourclientid

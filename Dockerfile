@@ -5,6 +5,10 @@ RUN apt install git nginx libnginx-mod-rtmp ffmpeg -y
 RUN mkdir /archive && mkdir /hls
 RUN chown -R www-data:root /archive /hls
 
+ENV HLS_PATH=/hls
+ENV REC_PATH=/archive
+ENV OVERPASS_DATABASE_PATH=/database
+
 COPY ./docker/nginx.conf /etc/nginx/nginx.conf
 COPY ./docker/startup.sh /startup.sh
 RUN chmod +x /startup.sh

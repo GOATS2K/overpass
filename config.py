@@ -23,9 +23,9 @@ def get_database_directory(dev: bool = False) -> str:
     database_name = "overpass.db" if not dev else "overpass-dev.db"
     env_database_path = os.environ.get("OVERPASS_DATABASE_PATH")
     if env_database_path:
-        database_path = Path(env_database_path)
-        database_path.mkdir(exist_ok=True)
-        return database_path / database_name
+        database_dir = Path(env_database_path)
+        database_dir.mkdir(exist_ok=True)
+        return database_dir / database_name
     return database_name
 
 
