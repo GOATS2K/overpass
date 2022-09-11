@@ -7,6 +7,7 @@ RUN mkdir /archive && mkdir /hls
 ENV HLS_PATH=/hls
 ENV REC_PATH=/archive
 ENV OVERPASS_DATABASE_PATH=/database
+ENV FLASK_ENV=production
 
 COPY ./docker/nginx.conf /etc/nginx/nginx.conf
 COPY ./docker/startup.sh /startup.sh
