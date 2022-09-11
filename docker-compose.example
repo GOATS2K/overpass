@@ -10,6 +10,7 @@ services:
       - DISCORD_REDIRECT_URI=yourredirecturi
       - DISCORD_GUILD_ID=yoursecretguildid
     volumes:
+      - /home/user/overpass/database:/database
       - /home/user/overpass/log:/var/log/nginx:ro
       - /home/user/overpass/archive:/archive:rw
       - /home/user/overpass/hls:/hls:rw
