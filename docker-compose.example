@@ -1,6 +1,6 @@
 services:
   overpass:
-    image: goats2k/overpass
+    image: goats2k/overpass:0.2.6
     container_name: overpass
     environment:
       - OVERPASS_SECRET_KEY=example_key_1337

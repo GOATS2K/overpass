@@ -3,7 +3,6 @@ FROM python:3.10.7
 RUN apt update
 RUN apt install git nginx libnginx-mod-rtmp ffmpeg -y
 RUN mkdir /archive && mkdir /hls
-RUN chown -R www-data:root /archive /hls
 
 ENV HLS_PATH=/hls
 ENV REC_PATH=/archive

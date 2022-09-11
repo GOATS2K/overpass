@@ -2,6 +2,7 @@
 if [ ! -f /database/overpass.db ]; then
     cd /app
     flask init-db --yes
+    chown -R www-data:root /archive /hls
 fi
 
 nginx &
