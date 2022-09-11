@@ -1,5 +1,5 @@
 #!/bin/bash
-if [ ! -f /app/overpass.db ]; then
+if [ ! -f /database/overpass.db ]; then
     cd /app
     flask init-db --yes
 fi

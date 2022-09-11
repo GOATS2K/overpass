@@ -6,7 +6,7 @@ services:
       - HLS_PATH=/hls
       - REC_PATH=/archive
       - OVERPASS_SECRET_KEY=example_key_1337
-      - RTMP_SERVER="127.0.0.1:1935/live"
+      - RTMP_SERVER=127.0.0.1:1935/live
       - DISCORD_CLIENT_ID=yourclientid
       - DISCORD_CLIENT_SECRET=yourclientsecret
       - DISCORD_REDIRECT_URI=yourredirecturi
