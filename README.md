@@ -6,6 +6,10 @@ Overpass also lets you run a private instance for a users on a single Discord se
 
 Powered by nginx-rtmp.
 
+# Notice
+This project is no longer maintained and I encourage you to find an alternative.
+I had many ideas for Overpass but honestly could never be arsed to work on it again as it was just about good enough when it was in use.
+
 # Dependencies
 - Python 3.8+
 - Nginx with the [nginx-rtmp module](https://github.com/arut/nginx-rtmp-module) installed
